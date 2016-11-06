@@ -1,0 +1,3 @@
+repository: https://github.com/mnapoli/silly
+tasks:
+    files: "find . -maxdepth 8 -type f | wc -l | xargs"

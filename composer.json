@@ -1,0 +1,12 @@
+{
+    "autoload": {
+        "psr-4": {
+            "GitIterator\\": "src/"
+        }
+    },
+    "require": {
+        "mnapoli/silly-php-di": "^1.1",
+        "symfony/yaml": "^3.1",
+        "symfony/filesystem": "^3.1"
+    }
+}
