@@ -2,20 +2,16 @@
 
 **Work in progress**
 
-## Configuration
-
 Configuration example (`conf.yml`):
 
 ```yaml
 repository: https://github.com/mnapoli/silly
 tasks:
-    # Finds the number of files in the repository
-    myapp.files: "find . -maxdepth 8 -type f | wc -l | xargs"
+    'Number of files': "find . -type f | wc -l | xargs"
+    'Number of directories': "find . -type d | wc -l | xargs"
 ```
 
-The repository is cloned and all tasks are run for each commit.
-
-## Usage
+To run the application:
 
 ```
 php app.php run
@@ -26,34 +22,18 @@ The git repository will be cloned in a `repository` folder, and tasks will be ru
 The output will look like this:
 
 ```
-files: 47 on commit 471677f5c8a0753d38b25e43e750148ddeafd885 (15 Feb 2015)
-files: 41 on commit 96c8a7a53a288f89d8e9e85189604f248f5f19bb (12 Feb 2015)
-files: 38 on commit ff6f1e3b6136ee9772de6a18012f14aef51f62c3 (09 Feb 2015)
-files: 34 on commit 616f723a7bd1022c52cfe589d81319b982ee2452 (07 Feb 2015)
+Commit,Date,Number of files,Number of directories
+d612a29fae3b0f625b9be819802e93214d4eecd9,2016-08-31T12:55:38+02:00,61,28
+497f22a27896d146a35660f452eba24d3a14db3f,2016-08-31T12:53:01+02:00,61,28
+fc0646f236e6bb0a10b14a67424f932f28eb1062,2016-08-26T19:29:40+02:00,62,28
+221528e63d7aac3aa247dfde191b5f6c380cbb7e,2016-08-25T01:28:55+02:00,62,28
 ...
 ```
 
-## Usage with Graphite
-
-You can use Graphite to store the data and create graphs. You can run Graphite simply with Docker:
+The output is formatted as CSV, you can write that to a file:
 
 ```
-./run-graphite.sh
+php app.php run > results.csv
 ```
 
-Then use the `--graphite` option and pipe that to port 2003 (Graphite) using netcat:
-
-```
-php app.php run --graphite | nc localhost -c 2003
-```
-
-The output piped to Graphite will look like this:
-
-```
-silly.files 47 1423733092
-silly.files 41 1423732866
-silly.files 38 1423731175
-silly.files 38 1423730802
-silly.files 34 1423730707
-...
-```
+You can then import that into a database or open it up with Excel or whatever.
