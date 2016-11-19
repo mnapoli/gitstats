@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace GitIterator;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
@@ -34,8 +34,9 @@ class RunCommand
         $this->commandRunner = $commandRunner;
     }
 
-    public function __invoke(OutputInterface $output)
+    public function __invoke(ConsoleOutputInterface $output)
     {
+        $stderr = $output->getErrorOutput();
         $repositoryDirectory = __DIR__ . '/../repository';
 
         // Load configuration
@@ -48,17 +49,20 @@ class RunCommand
         if (is_dir($repositoryDirectory)) {
             $url = $this->git->getRemoteUrl($repositoryDirectory);
             if ($url !== $configuration['repository']) {
+                $stderr->writeln('Existing directory "repository" found, removing it');
                 $this->filesystem->remove($repositoryDirectory);
             }
         }
 
         // Clone the repository
         if (!is_dir($repositoryDirectory)) {
+            $stderr->writeln(sprintf('Cloning %s in directory "repository"', $configuration['repository']));
             $this->git->clone($configuration['repository'], $repositoryDirectory);
         }
 
         // Get the list of commits
         $commits = $this->git->getCommitList($repositoryDirectory, 'master');
+        $stderr->writeln(sprintf('Iterating through %d commits', count($commits)));
 
         // Echo the column names
         $taskNames = array_keys($configuration['tasks']);
@@ -72,8 +76,13 @@ class RunCommand
             foreach ($configuration['tasks'] as $taskName => $taskCommand) {
                 $line[] = $this->commandRunner->runInDirectory($repositoryDirectory, $taskCommand);
             }
-            array_unshift($line, $commit, date('c', $timestamp));
+            array_unshift($line, $commit, date('Y-m-d H:i:s', $timestamp));
+            $line = array_map(function (string $str) {
+                return '"' . addslashes($str) . '"';
+            }, $line);
             $output->writeln(implode(',', $line));
         }
+
+        $stderr->writeln('Done');
     }
 }
