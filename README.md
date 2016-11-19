@@ -7,6 +7,8 @@ Configuration example (`conf.yml`):
 ```yaml
 repository: https://github.com/mnapoli/silly
 tasks:
+    'Commit message': "git log -1 --pretty=%B | head -n 1"
+    'Commit author': "git log -1 --pretty=%an"
     'Number of files': "find . -type f | wc -l | xargs"
     'Number of directories': "find . -type d | wc -l | xargs"
 ```
