@@ -45,11 +45,12 @@ class RunCommand
             throw new \Exception('Configuration file "conf.yml" missing');
         }
         $configuration = Yaml::parse(file_get_contents('conf.yml'));
+        $repositoryUrl = $configuration['repository'];
 
         // Check the existing directory
         if (is_dir($repositoryDirectory)) {
             $url = $this->git->getRemoteUrl($repositoryDirectory);
-            if ($url !== $configuration['repository']) {
+            if ($url !== $repositoryUrl) {
                 $stderr->writeln('Existing directory "repository" found, removing it');
                 $this->filesystem->remove($repositoryDirectory);
             }
@@ -57,8 +58,8 @@ class RunCommand
 
         // Clone the repository
         if (!is_dir($repositoryDirectory)) {
-            $stderr->writeln(sprintf('Cloning %s in directory "repository"', $configuration['repository']));
-            $this->git->clone($configuration['repository'], $repositoryDirectory);
+            $stderr->writeln(sprintf('Cloning %s in directory "repository"', $repositoryUrl));
+            $this->git->clone($repositoryUrl, $repositoryDirectory);
         }
 
         // Get the list of commits
