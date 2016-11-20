@@ -4,6 +4,8 @@ declare(strict_types = 1);
 namespace GitIterator;
 
 use GitIterator\Formatter\Formatter;
+use GitIterator\Helper\CommandRunner;
+use GitIterator\Helper\Git;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
@@ -11,7 +13,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * @author Matthieu Napoli <matthieu@mnapoli.fr>
  */
-class RunCommand
+class TaskRunner
 {
     /**
      * @var Git

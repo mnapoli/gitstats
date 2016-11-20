@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace GitIterator;
+namespace GitIterator\Helper;
 
 /**
  * @author Matthieu Napoli <matthieu@mnapoli.fr>

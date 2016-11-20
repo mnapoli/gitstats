@@ -39,3 +39,9 @@ php app.php run > results.csv
 ```
 
 You can then import that into a database or open it up with Excel or whatever.
+
+You can also output the result as SQL queries:
+
+```
+php app.php run --format=sql | mysql -u dbuser -p mytable
+```
