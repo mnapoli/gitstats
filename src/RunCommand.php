@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace GitIterator;
 
+use GitIterator\Formatter\Formatter;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
@@ -34,7 +35,7 @@ class RunCommand
         $this->commandRunner = $commandRunner;
     }
 
-    public function __invoke(ConsoleOutputInterface $output)
+    public function __invoke(string $format = null, ConsoleOutputInterface $output)
     {
         $stderr = $output->getErrorOutput();
         $repositoryDirectory = __DIR__ . '/../repository';
@@ -64,25 +65,34 @@ class RunCommand
         $commits = $this->git->getCommitList($repositoryDirectory, 'master');
         $stderr->writeln(sprintf('Iterating through %d commits', count($commits)));
 
-        // Echo the column names
-        $taskNames = array_keys($configuration['tasks']);
-        array_unshift($taskNames, 'Commit', 'Date');
-        $output->writeln(implode(',', $taskNames));
+        $data = $this->process($commits, $repositoryDirectory, $configuration['tasks']);
 
-        foreach ($commits as $commit) {
-            $this->git->checkoutCommit($repositoryDirectory, $commit);
-            $timestamp = $this->git->getCommitTimestamp($repositoryDirectory, $commit);
-            $line = [];
-            foreach ($configuration['tasks'] as $taskName => $taskCommand) {
-                $line[] = $this->commandRunner->runInDirectory($repositoryDirectory, $taskCommand);
-            }
-            array_unshift($line, $commit, date('Y-m-d H:i:s', $timestamp));
-            $line = array_map(function (string $str) {
-                return '"' . addslashes($str) . '"';
-            }, $line);
-            $output->writeln(implode(',', $line));
+        $format = $format ?: 'csv';
+        $formatterClass = sprintf('GitIterator\Formatter\%sFormatter', ucfirst($format));
+        /** @var Formatter $formatter */
+        $formatter = new $formatterClass;
+        $data = $formatter->format($configuration['tasks'], $data);
+        foreach ($data as $line) {
+            $output->writeln($line);
         }
 
         $stderr->writeln('Done');
+    }
+
+    private function process($commits, $directory, array $tasks) : \Generator
+    {
+        foreach ($commits as $commit) {
+            $this->git->checkoutCommit($directory, $commit);
+            $timestamp = $this->git->getCommitTimestamp($directory, $commit);
+            $data = [
+                'commit' => $commit,
+                'date' => date('Y-m-d H:i:s', $timestamp),
+            ];
+            foreach ($tasks as $taskName => $taskCommand) {
+                $taskResult = $this->commandRunner->runInDirectory($directory, $taskCommand);
+                $data[$taskName] = $taskResult;
+            }
+            yield $data;
+        }
     }
 }

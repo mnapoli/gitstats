@@ -8,6 +8,6 @@ use Silly\Edition\PhpDi\Application;
 
 $app = new Application();
 
-$app->command('run', RunCommand::class);
+$app->command('run [--format=]', RunCommand::class);
 
 $app->run();
