@@ -52,6 +52,12 @@ class Git
         $this->run($directory, "git checkout $commit");
     }
 
+    public function reset(string $directory, string $commit, bool $hard)
+    {
+        $mode = $hard ? '--hard' : '';
+        $this->run($directory, "git reset $mode $commit");
+    }
+
     public function getCommitTimestamp(string $directory, string $commit) : int
     {
         return (int) $this->run($directory, "git show -s --format=%ct $commit");
