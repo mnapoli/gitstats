@@ -45,3 +45,9 @@ You can also output the result as SQL queries:
 ```
 php app.php run --format=sql | mysql -u dbuser -p mytable
 ```
+
+### Run once
+
+```
+php app.php run-once
+```

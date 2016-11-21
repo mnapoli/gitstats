@@ -63,6 +63,11 @@ class Git
         return (int) $this->run($directory, "git show -s --format=%ct $commit");
     }
 
+    public function getCurrentCommit($repositoryDirectory)
+    {
+        return trim($this->run($repositoryDirectory, 'git rev-parse HEAD'));
+    }
+
     private function run(string $directory, string $command) : string
     {
         return $this->commandRunner->runInDirectory($directory, $command);

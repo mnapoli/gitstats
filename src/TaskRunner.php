@@ -37,16 +37,11 @@ class TaskRunner
         $this->commandRunner = $commandRunner;
     }
 
-    public function __invoke(string $format = null, ConsoleOutputInterface $output)
+    public function run(string $format = null, ConsoleOutputInterface $output)
     {
         $stderr = $output->getErrorOutput();
         $repositoryDirectory = __DIR__ . '/../repository';
-
-        // Load configuration
-        if (!file_exists('conf.yml')) {
-            throw new \Exception('Configuration file "conf.yml" missing');
-        }
-        $configuration = Yaml::parse(file_get_contents('conf.yml'));
+        $configuration = $this->loadConfiguration();
         $repositoryUrl = $configuration['repository'];
 
         // Check the existing directory
@@ -68,8 +63,52 @@ class TaskRunner
         $commits = $this->git->getCommitList($repositoryDirectory, 'master');
         $stderr->writeln(sprintf('Iterating through %d commits', count($commits)));
 
-        $data = $this->process($commits, $repositoryDirectory, $configuration['tasks']);
+        $data = $this->processCommits($commits, $repositoryDirectory, $configuration['tasks']);
 
+        $this->formatAndOutput($format, $output, $configuration, $data);
+
+        $stderr->writeln('Done');
+    }
+
+    public function runOnce(string $format = null, ConsoleOutputInterface $output)
+    {
+        $stderr = $output->getErrorOutput();
+        $repositoryDirectory = __DIR__ . '/../repository';
+        $configuration = $this->loadConfiguration();
+
+        $commit = $this->git->getCurrentCommit($repositoryDirectory);
+
+        $data = [$this->processDirectory($commit, $repositoryDirectory, $configuration['tasks'])];
+
+        $this->formatAndOutput($format, $output, $configuration, $data);
+
+        $stderr->writeln('Done');
+    }
+
+    private function processCommits($commits, $directory, array $tasks) : \Generator
+    {
+        foreach ($commits as $commit) {
+            $this->git->checkoutCommit($directory, $commit);
+            yield $this->processDirectory($commit, $directory, $tasks);
+        }
+    }
+
+    private function processDirectory(string $commit, string $directory, array $tasks) : array
+    {
+        $timestamp = $this->git->getCommitTimestamp($directory, $commit);
+        $data = [
+            'commit' => $commit,
+            'date' => date('Y-m-d H:i:s', $timestamp),
+        ];
+        foreach ($tasks as $taskName => $taskCommand) {
+            $taskResult = $this->commandRunner->runInDirectory($directory, $taskCommand);
+            $data[$taskName] = $taskResult;
+        }
+        return $data;
+    }
+
+    private function formatAndOutput(string $format, ConsoleOutputInterface $output, $configuration, $data)
+    {
         $format = $format ?: 'csv';
         $formatterClass = sprintf('GitIterator\Formatter\%sFormatter', ucfirst($format));
         /** @var Formatter $formatter */
@@ -78,24 +117,13 @@ class TaskRunner
         foreach ($data as $line) {
             $output->writeln($line);
         }
-
-        $stderr->writeln('Done');
     }
 
-    private function process($commits, $directory, array $tasks) : \Generator
+    private function loadConfiguration() : array
     {
-        foreach ($commits as $commit) {
-            $this->git->checkoutCommit($directory, $commit);
-            $timestamp = $this->git->getCommitTimestamp($directory, $commit);
-            $data = [
-                'commit' => $commit,
-                'date' => date('Y-m-d H:i:s', $timestamp),
-            ];
-            foreach ($tasks as $taskName => $taskCommand) {
-                $taskResult = $this->commandRunner->runInDirectory($directory, $taskCommand);
-                $data[$taskName] = $taskResult;
-            }
-            yield $data;
+        if (! file_exists('conf.yml')) {
+            throw new \Exception('Configuration file "conf.yml" missing');
         }
+        return Yaml::parse(file_get_contents('conf.yml'));
     }
 }
