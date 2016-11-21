@@ -26,6 +26,6 @@ class CommandRunner
 
     public function runInDirectory(string $directory, string $command) : string
     {
-        return $this->run("cd \"$directory\" && $command");
+        return trim($this->run("cd \"$directory\" && $command"));
     }
 }

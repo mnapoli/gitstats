@@ -121,9 +121,9 @@ class TaskRunner
 
     private function loadConfiguration() : array
     {
-        if (! file_exists('conf.yml')) {
-            throw new \Exception('Configuration file "conf.yml" missing');
+        if (! file_exists('gitstats.yml')) {
+            throw new \Exception('Configuration file "gitstats.yml" missing');
         }
-        return Yaml::parse(file_get_contents('conf.yml'));
+        return Yaml::parse(file_get_contents('gitstats.yml'));
     }
 }
