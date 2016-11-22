@@ -10,6 +10,11 @@ class SqlFormatter implements Formatter
 {
     public function format(array $configuration, $source) : \Generator
     {
+        $table = $configuration['sql']['table'] ?? null;
+        if (!$table) {
+            throw new \Exception('You must set a `sql.table` key in the configuration');
+        }
+
         $tasks = $configuration['tasks'];
         $taskNames = array_keys($tasks);
         array_unshift($taskNames, 'commit', 'date');
@@ -30,7 +35,8 @@ class SqlFormatter implements Formatter
             // Insert or update to avoid loosing values in other extra
             // columns in the same table
             yield sprintf(
-                'INSERT INTO `php-di` (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s;',
+                'INSERT INTO `%s` (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s;',
+                $table,
                 implode(', ', $columns),
                 implode(', ', $data),
                 implode(', ', $columnsForUpdate)
