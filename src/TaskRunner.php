@@ -50,7 +50,7 @@ class TaskRunner
         $commits = $this->git->getCommitList($directory, 'master');
         $output->getErrorOutput()->writeln(sprintf('Iterating through %d commits', count($commits)));
 
-        $data = $this->processCommits($commits, $directory, $tasks);
+        $data = $this->processCommits($commits, $directory, $configuration['tasks']);
 
         $this->formatAndOutput($format, $output, $configuration, $data);
 
