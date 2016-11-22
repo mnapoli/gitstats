@@ -10,8 +10,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 $app = new Application();
 
-$app->command('run [--format=]', [TaskRunner::class, 'run']);
-$app->command('run-once [--format=]', [TaskRunner::class, 'runOnce']);
+$app->command('run [directory] [--format=]', [TaskRunner::class, 'run']);
+$app->command('run-once [directory] [--format=]', [TaskRunner::class, 'runOnce']);
 
 $app->command('clear', function (Filesystem $filesystem, Git $git) {
     $repositoryDirectory = __DIR__ . '/repository';

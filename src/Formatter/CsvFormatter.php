@@ -8,9 +8,9 @@ namespace GitIterator\Formatter;
  */
 class CsvFormatter implements Formatter
 {
-    public function format(array $tasks, $source) : \Generator
+    public function format(array $configuration, $source) : \Generator
     {
-        $taskNames = array_keys($tasks);
+        $taskNames = array_keys($configuration['tasks']);
         array_unshift($taskNames, 'commit', 'date');
         yield implode(',', $taskNames);
 

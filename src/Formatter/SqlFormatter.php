@@ -8,8 +8,9 @@ namespace GitIterator\Formatter;
  */
 class SqlFormatter implements Formatter
 {
-    public function format(array $tasks, $source) : \Generator
+    public function format(array $configuration, $source) : \Generator
     {
+        $tasks = $configuration['tasks'];
         $taskNames = array_keys($tasks);
         array_unshift($taskNames, 'commit', 'date');
         $columns = array_map(function (string $taskName) {

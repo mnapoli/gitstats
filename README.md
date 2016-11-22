@@ -2,10 +2,9 @@
 
 **Work in progress**
 
-Configuration example (`conf.yml`):
+Configuration example (`gitstats.yml`):
 
 ```yaml
-repository: https://github.com/mnapoli/silly
 tasks:
     'Commit message': "git log -1 --pretty=%B | head -n 1"
     'Commit author': "git log -1 --pretty=%an"
@@ -16,10 +15,10 @@ tasks:
 To run the application:
 
 ```
-php app.php run
+php app.php run <directory>
 ```
 
-The git repository will be cloned in a `repository` folder, and tasks will be run against each commit.
+The repository should contain a git repository. All tasks will be run against each commit. Ensure the repository doesn't contain modifications.
 
 The output will look like this:
 

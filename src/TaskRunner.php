@@ -37,52 +37,42 @@ class TaskRunner
         $this->commandRunner = $commandRunner;
     }
 
-    public function run(string $format = null, ConsoleOutputInterface $output)
+    public function run(string $directory = null, string $format = null, ConsoleOutputInterface $output)
     {
-        $stderr = $output->getErrorOutput();
-        $repositoryDirectory = __DIR__ . '/../repository';
+        $format = $format ?: 'csv';
+        $directory = $directory ? realpath($directory) : getcwd();
+        if (!is_dir($directory)) {
+            throw new \Exception('Unknown directory ' . $directory);
+        }
         $configuration = $this->loadConfiguration();
-        $repositoryUrl = $configuration['repository'];
-
-        // Check the existing directory
-        if (is_dir($repositoryDirectory)) {
-            $url = $this->git->getRemoteUrl($repositoryDirectory);
-            if ($url !== $repositoryUrl) {
-                $stderr->writeln('Existing directory "repository" found, removing it');
-                $this->filesystem->remove($repositoryDirectory);
-            }
-        }
-
-        // Clone the repository
-        if (!is_dir($repositoryDirectory)) {
-            $stderr->writeln(sprintf('Cloning %s in directory "repository"', $repositoryUrl));
-            $this->git->clone($repositoryUrl, $repositoryDirectory);
-        }
 
         // Get the list of commits
-        $commits = $this->git->getCommitList($repositoryDirectory, 'master');
-        $stderr->writeln(sprintf('Iterating through %d commits', count($commits)));
+        $commits = $this->git->getCommitList($directory, 'master');
+        $output->getErrorOutput()->writeln(sprintf('Iterating through %d commits', count($commits)));
 
-        $data = $this->processCommits($commits, $repositoryDirectory, $configuration['tasks']);
+        $data = $this->processCommits($commits, $directory, $configuration['tasks']);
 
         $this->formatAndOutput($format, $output, $configuration, $data);
 
-        $stderr->writeln('Done');
+        $output->getErrorOutput()->writeln('Done');
     }
 
-    public function runOnce(string $format = null, ConsoleOutputInterface $output)
+    public function runOnce(string $directory = null, string $format = null, ConsoleOutputInterface $output)
     {
-        $stderr = $output->getErrorOutput();
-        $repositoryDirectory = __DIR__ . '/../repository';
+        $format = $format ?: 'csv';
+        $directory = $directory ? realpath($directory) : getcwd();
+        if (!is_dir($directory)) {
+            throw new \Exception('Unknown directory ' . $directory);
+        }
         $configuration = $this->loadConfiguration();
 
-        $commit = $this->git->getCurrentCommit($repositoryDirectory);
+        $commit = $this->git->getCurrentCommit($directory);
 
-        $data = [$this->processDirectory($commit, $repositoryDirectory, $configuration['tasks'])];
+        $data = [$this->processDirectory($commit, $directory, $configuration['tasks'])];
 
         $this->formatAndOutput($format, $output, $configuration, $data);
 
-        $stderr->writeln('Done');
+        $output->getErrorOutput()->writeln('Done');
     }
 
     private function processCommits($commits, $directory, array $tasks) : \Generator
@@ -107,13 +97,13 @@ class TaskRunner
         return $data;
     }
 
-    private function formatAndOutput(string $format, ConsoleOutputInterface $output, $configuration, $data)
+    private function formatAndOutput(string $format, ConsoleOutputInterface $output, array $configuration, $data)
     {
         $format = $format ?: 'csv';
         $formatterClass = sprintf('GitIterator\Formatter\%sFormatter', ucfirst($format));
         /** @var Formatter $formatter */
         $formatter = new $formatterClass;
-        $data = $formatter->format($configuration['tasks'], $data);
+        $data = $formatter->format($configuration, $data);
         foreach ($data as $line) {
             $output->writeln($line);
         }

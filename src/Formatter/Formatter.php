@@ -8,5 +8,5 @@ namespace GitIterator\Formatter;
  */
 interface Formatter
 {
-    public function format(array $tasks, $source) : \Generator;
+    public function format(array $configuration, $source) : \Generator;
 }
