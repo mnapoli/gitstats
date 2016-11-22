@@ -37,34 +37,34 @@ class TaskRunner
         $this->commandRunner = $commandRunner;
     }
 
-    public function run(string $directory = null, string $format = null, ConsoleOutputInterface $output)
+    public function run(string $directory = null, array $tasks = null, string $format = null, ConsoleOutputInterface $output)
     {
         $format = $format ?: 'csv';
         $directory = $directory ? realpath($directory) : getcwd();
         if (!is_dir($directory)) {
             throw new \Exception('Unknown directory ' . $directory);
         }
-        $configuration = $this->loadConfiguration();
+        $configuration = $this->loadConfiguration($tasks);
 
         // Get the list of commits
         $commits = $this->git->getCommitList($directory, 'master');
         $output->getErrorOutput()->writeln(sprintf('Iterating through %d commits', count($commits)));
 
-        $data = $this->processCommits($commits, $directory, $configuration['tasks']);
+        $data = $this->processCommits($commits, $directory, $tasks);
 
         $this->formatAndOutput($format, $output, $configuration, $data);
 
         $output->getErrorOutput()->writeln('Done');
     }
 
-    public function runOnce(string $directory = null, string $format = null, ConsoleOutputInterface $output)
+    public function runOnce(string $directory = null, array $tasks = null, string $format = null, ConsoleOutputInterface $output)
     {
         $format = $format ?: 'csv';
         $directory = $directory ? realpath($directory) : getcwd();
         if (!is_dir($directory)) {
             throw new \Exception('Unknown directory ' . $directory);
         }
-        $configuration = $this->loadConfiguration();
+        $configuration = $this->loadConfiguration($tasks);
 
         $commit = $this->git->getCurrentCommit($directory);
 
@@ -109,11 +109,17 @@ class TaskRunner
         }
     }
 
-    private function loadConfiguration() : array
+    private function loadConfiguration(array $tasks = null) : array
     {
         if (! file_exists('gitstats.yml')) {
             throw new \Exception('Configuration file "gitstats.yml" missing');
         }
-        return Yaml::parse(file_get_contents('gitstats.yml'));
+        $configuration = Yaml::parse(file_get_contents('gitstats.yml'));
+
+        if (!empty($configuration['tasks'])) {
+            $configuration['tasks'] = array_intersect_key($configuration['tasks'], array_flip($tasks));
+        }
+
+        return $configuration;
     }
 }
