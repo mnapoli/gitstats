@@ -116,7 +116,7 @@ class TaskRunner
         }
         $configuration = Yaml::parse(file_get_contents('gitstats.yml'));
 
-        if (!empty($configuration['tasks'])) {
+        if ($tasks && !empty($configuration['tasks'])) {
             $configuration['tasks'] = array_intersect_key($configuration['tasks'], array_flip($tasks));
         }
 
