@@ -6,6 +6,8 @@
 - install Composer dependencies
 - symlink the `gitstats` to your `/usr/local/bin`: `ln -s /home/<you>/code/gitstats/gitstats /usr/local/bin/gitstats`
 
+Alternatively you can install the Composer package globally (`composer global require mnapoli/gitstats`)
+
 ## Usage
 
 - Add a `.gitstats.yml` file in your current directory:

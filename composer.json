@@ -1,4 +1,7 @@
 {
+    "name": "mnapoli/gitstats",
+    "description": "Iterate through git commits to gather statistics",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "GitStats\\": "src/"
@@ -14,5 +17,8 @@
         "platform": {
             "php": "7.0"
         }
-    }
+    },
+    "bin": [
+        "gitstats"
+    ]
 }
