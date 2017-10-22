@@ -1,8 +1,14 @@
-# Iterate through git commits
+# Iterate through git commits to gather statistics
 
 **Work in progress**
 
-Configuration example (`gitstats.yml`):
+## Usage
+
+- clone the repository you want to analyze in a temporary directory (e.g. `/tmp/repository`)
+- add a `gitstats.yml` file in your current directory
+- run `gitstats run /tmp/repository`
+
+Example of a `gitstats.yml`:
 
 ```yaml
 tasks:
@@ -12,10 +18,12 @@ tasks:
     'Number of directories': "find . -type d | wc -l | xargs"
 ```
 
+Tasks are run for each commit in the directory containing the repository.
+
 To run the application:
 
 ```
-php app.php run <directory>
+gitstats run <directory>
 ```
 
 The repository should contain a git repository. All tasks will be run against each commit. Ensure the repository doesn't contain modifications.
@@ -34,7 +42,7 @@ fc0646f236e6bb0a10b14a67424f932f28eb1062,2016-08-26T19:29:40+02:00,62,28
 The output is formatted as CSV, you can write that to a file:
 
 ```
-php app.php run > results.csv
+php app.php run <directory> > results.csv
 ```
 
 You can then import that into a database or open it up with Excel or whatever.
@@ -42,11 +50,11 @@ You can then import that into a database or open it up with Excel or whatever.
 You can also output the result as SQL queries:
 
 ```
-php app.php run --format=sql | mysql -u dbuser -p mytable
+php app.php run <directory> --format=sql | mysql -u dbuser -p mytable
 ```
 
 ### Run once
 
 ```
-php app.php run-once
+php app.php run-once <directory>
 ```
