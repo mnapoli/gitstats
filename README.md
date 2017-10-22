@@ -1,7 +1,5 @@
 # Iterate through git commits to gather statistics
 
-**Work in progress**
-
 ## Installation
 
 - clone this repository
