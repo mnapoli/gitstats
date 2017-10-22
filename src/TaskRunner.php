@@ -53,13 +53,10 @@ class TaskRunner
     public function run(
         string $url,
         array $tasks = null,
-        string $format = null,
+        string $format = 'csv',
         InputInterface $input,
         ConsoleOutputInterface $output
     ) {
-        // TODO default parameter value?
-        $format = $format ?: 'csv';
-
         $directory = $this->createTemporaryDirectory();
 
         $this->printInfo("Cloning $url in $directory", $output);
