@@ -2,8 +2,8 @@
 <?php
 declare(strict_types = 1);
 
-use GitIterator\Application;
-use GitIterator\TaskRunner;
+use GitStats\Application;
+use GitStats\TaskRunner;
 
 foreach ([__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php'] as $file) {
     if (file_exists($file)) {

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace GitIterator\Formatter;
+namespace GitStats\Formatter;
 
 /**
  * @author Matthieu Napoli <matthieu@mnapoli.fr>

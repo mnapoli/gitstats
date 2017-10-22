@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace GitIterator;
+namespace GitStats;
 
-use GitIterator\Formatter\Formatter;
-use GitIterator\Helper\CommandRunner;
-use GitIterator\Helper\Git;
+use GitStats\Formatter\Formatter;
+use GitStats\Helper\CommandRunner;
+use GitStats\Helper\Git;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
@@ -112,7 +112,7 @@ class TaskRunner
     private function formatAndOutput(string $format, ConsoleOutputInterface $output, array $configuration, $data)
     {
         $format = $format ?: 'csv';
-        $formatterClass = sprintf('GitIterator\Formatter\%sFormatter', ucfirst($format));
+        $formatterClass = sprintf('GitStats\Formatter\%sFormatter', ucfirst($format));
         /** @var Formatter $formatter */
         $formatter = new $formatterClass;
         $data = $formatter->format($configuration, $data);

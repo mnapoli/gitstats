@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace GitIterator\Helper;
+namespace GitStats\Helper;
 
 /**
  * Wrapper around git commands.

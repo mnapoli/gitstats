@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace GitIterator;
+namespace GitStats;
 
 use DI\Container;
 use DI\ContainerBuilder;
