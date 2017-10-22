@@ -10,11 +10,7 @@
 
 ## Usage
 
-- clone the repository you want to analyze in a temporary directory (e.g. `/tmp/repository`)
-- add a `gitstats.yml` file in your current directory (you can create an empty directory if you want)
-- run `gitstats run /tmp/repository`
-
-Example of a `gitstats.yml`:
+- Add a `gitstats.yml` file in your current directory:
 
 ```yaml
 tasks:
@@ -24,17 +20,15 @@ tasks:
     'Number of directories': "find . -type d | wc -l | xargs"
 ```
 
-Tasks are run for each commit in the directory containing the repository.
-
-To run the application:
+- Run the application:
 
 ```
-gitstats run <directory>
+gitstats run <git-repository-url>
 ```
 
-The repository should contain a git repository. All tasks will be run against each commit. Ensure the repository doesn't contain modifications.
+The repository will be cloned in a temporary directory. All tasks will be run against each commit. Ensure the repository doesn't contain modifications.
 
-The output will look like this:
+The output is formatted as CSV:
 
 ```
 Commit,Date,Number of files,Number of directories
@@ -45,10 +39,10 @@ fc0646f236e6bb0a10b14a67424f932f28eb1062,2016-08-26T19:29:40+02:00,62,28
 ...
 ```
 
-The output is formatted as CSV, you can write that to a file:
+You can write the output to a file:
 
 ```
-gitstats run <directory> > results.csv
+gitstats run <git-repository-url> > results.csv
 ```
 
 You can then import that into a database or open it up with Excel or whatever.
@@ -56,11 +50,5 @@ You can then import that into a database or open it up with Excel or whatever.
 You can also output the result as SQL queries:
 
 ```
-gitstats run <directory> --format=sql | mysql -u dbuser -p mytable
-```
-
-### Run once
-
-```
-gitstats run-once <directory>
+gitstats run <git-repository-url> --format=sql | mysql -u dbuser -p mytable
 ```
