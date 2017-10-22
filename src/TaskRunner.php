@@ -59,29 +59,29 @@ class TaskRunner
     ) {
         $directory = $this->createTemporaryDirectory();
 
-        $this->printInfo("Cloning $url in $directory", $output);
+        $this->printDebug("Cloning $url in $directory", $output);
         $this->git->clone($url, $directory);
 
-        $configuration = $this->loadConfiguration($tasks);
+        $configuration = $this->loadConfiguration($directory, $tasks);
 
         // Get the list of commits
         $commits = $this->git->getCommitList($directory, 'master');
-        $this->printInfo(sprintf('Iterating through %d commits', count($commits)), $output);
+        $this->printDebug(sprintf('Iterating through %d commits', count($commits)), $output);
 
         $data = $this->processCommits($commits, $directory, $configuration['tasks']);
 
         $this->formatAndOutput($format, $output, $configuration, $data);
 
-        $this->printInfo('Done', $output);
+        $this->printDebug('Done', $output);
 
         /** @var QuestionHelper $helper */
         $helper = $this->application->getHelperSet()->get('question');
         $question = new ConfirmationQuestion("<comment>Delete directory $directory? <info>[Y/n]</info></comment>");
         if ($helper->ask($input, $output, $question)) {
-            $this->printInfo("Deleting $directory", $output);
+            $this->printDebug("Deleting $directory", $output);
             $this->filesystem->remove($directory);
         } else {
-            $this->printInfo("Not deleting $directory", $output);
+            $this->printDebug("Not deleting $directory", $output);
         }
     }
 
@@ -119,13 +119,22 @@ class TaskRunner
         }
     }
 
-    private function loadConfiguration(array $tasks = null) : array
+    /**
+     * Load configuration from the ".gitstats.yml" file in the target directory.
+     *
+     * @param array|null $tasks Filter the tasks to run.
+     * @return array Configuration.
+     */
+    private function loadConfiguration(string $directory, array $tasks = null) : array
     {
-        if (! file_exists('gitstats.yml')) {
-            throw new \Exception('Configuration file "gitstats.yml" missing');
-        }
-        $configuration = Yaml::parse(file_get_contents('gitstats.yml'));
+        $configurationFile = $directory . '/.gitstats.yml';
 
+        if (! file_exists($configurationFile)) {
+            throw new \Exception('Configuration file ".gitstats.yml" is missing in the repository');
+        }
+        $configuration = Yaml::parse(file_get_contents($configurationFile));
+
+        // Filter the tasks to run
         if ($tasks && ! empty($configuration['tasks'])) {
             $configuration['tasks'] = array_intersect_key($configuration['tasks'], array_flip($tasks));
         }
@@ -147,7 +156,10 @@ class TaskRunner
         return $temporaryFile;
     }
 
-    private function printInfo($message, ConsoleOutputInterface $output)
+    /**
+     * Print a debug message on stderr.
+     */
+    private function printDebug($message, ConsoleOutputInterface $output)
     {
         $output->getErrorOutput()->writeln("<comment>$message</comment>");
     }

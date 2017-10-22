@@ -10,7 +10,7 @@
 
 ## Usage
 
-- Add a `gitstats.yml` file in your current directory:
+- Add a `.gitstats.yml` file in your current directory:
 
 ```yaml
 tasks:
@@ -50,5 +50,5 @@ You can then import that into a database or open it up with Excel or whatever.
 You can also output the result as SQL queries:
 
 ```
-gitstats run <git-repository-url> --format=sql | mysql -u dbuser -p mytable
+gitstats run <git-repository-url> --format=sql | mysql -u <user> -p <table>
 ```
