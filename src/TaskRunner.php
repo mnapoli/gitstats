@@ -54,19 +54,23 @@ class TaskRunner
         string $url,
         array $tasks = null,
         string $format = 'csv',
+        int $max = null,
         InputInterface $input,
         ConsoleOutputInterface $output
     ) {
         $directory = $this->createTemporaryDirectory();
 
-        $this->printDebug("Cloning $url in $directory", $output);
+        $this->printDebug("Cloning <info>$url</info> in $directory", $output);
         $this->git->clone($url, $directory);
 
         $configuration = $this->loadConfiguration($directory, $tasks);
 
         // Get the list of commits
-        $commits = $this->git->getCommitList($directory, 'master');
-        $this->printDebug(sprintf('Iterating through %d commits', count($commits)), $output);
+        $commits = $this->git->getCommitList($directory);
+        if (is_int($max)) {
+            $commits = array_splice($commits, 0, $max);
+        }
+        $this->printDebug(sprintf('Iterating through <info>%d</info> commits', count($commits)), $output);
 
         $data = $this->processCommits($commits, $directory, $configuration['tasks']);
 
@@ -89,22 +93,20 @@ class TaskRunner
     {
         foreach ($commits as $commit) {
             $this->git->checkoutCommit($directory, $commit);
-            yield $this->processDirectory($commit, $directory, $tasks);
-        }
-    }
 
-    private function processDirectory(string $commit, string $directory, array $tasks) : array
-    {
-        $timestamp = $this->git->getCommitTimestamp($directory, $commit);
-        $data = [
-            'commit' => $commit,
-            'date' => date('Y-m-d H:i:s', $timestamp),
-        ];
-        foreach ($tasks as $taskName => $taskCommand) {
-            $taskResult = $this->commandRunner->runInDirectory($directory, $taskCommand);
-            $data[$taskName] = $taskResult;
+            $timestamp = $this->git->getCommitTimestamp($directory, $commit);
+            $data = [
+                'commit' => $commit,
+                'date' => date('Y-m-d H:i:s', $timestamp),
+            ];
+
+            foreach ($tasks as $taskName => $taskCommand) {
+                $taskResult = $this->commandRunner->runInDirectory($directory, $taskCommand);
+                $data[$taskName] = $taskResult;
+            }
+
+            yield $data;
         }
-        return $data;
     }
 
     private function formatAndOutput(string $format, ConsoleOutputInterface $output, array $configuration, $data)
