@@ -6,7 +6,10 @@ namespace GitIterator;
 use GitIterator\Formatter\Formatter;
 use GitIterator\Helper\CommandRunner;
 use GitIterator\Helper\Git;
+use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
@@ -30,49 +33,50 @@ class TaskRunner
      */
     private $commandRunner;
 
-    public function __construct(Git $git, Filesystem $filesystem, CommandRunner $commandRunner)
+    /**
+     * @var Application
+     */
+    private $application;
+
+    public function __construct(Git $git, Filesystem $filesystem, CommandRunner $commandRunner, Application $application)
     {
         $this->git = $git;
         $this->filesystem = $filesystem;
         $this->commandRunner = $commandRunner;
+        $this->application = $application;
     }
 
-    public function run(string $directory = null, array $tasks = null, string $format = null, ConsoleOutputInterface $output)
+    public function run(string $url, array $tasks = null, string $format = null, InputInterface $input, ConsoleOutputInterface $output)
     {
+        // TODO default parameter value?
         $format = $format ?: 'csv';
-        $directory = $directory ? realpath($directory) : getcwd();
-        if (!is_dir($directory)) {
-            throw new \Exception('Unknown directory ' . $directory);
-        }
+
+        $directory = $this->createTemporaryDirectory();
+
+        $this->printInfo("Cloning $url in $directory", $output);
+        $this->git->clone($url, $directory);
+
         $configuration = $this->loadConfiguration($tasks);
 
         // Get the list of commits
         $commits = $this->git->getCommitList($directory, 'master');
-        $output->getErrorOutput()->writeln(sprintf('Iterating through %d commits', count($commits)));
+        $this->printInfo(sprintf('Iterating through %d commits', count($commits)), $output);
 
         $data = $this->processCommits($commits, $directory, $configuration['tasks']);
 
         $this->formatAndOutput($format, $output, $configuration, $data);
 
-        $output->getErrorOutput()->writeln('Done');
-    }
+        $this->printInfo('Done', $output);
 
-    public function runOnce(string $directory = null, array $tasks = null, string $format = null, ConsoleOutputInterface $output)
-    {
-        $format = $format ?: 'csv';
-        $directory = $directory ? realpath($directory) : getcwd();
-        if (!is_dir($directory)) {
-            throw new \Exception('Unknown directory ' . $directory);
+        /** @var QuestionHelper $helper */
+        $helper = $this->application->getHelperSet()->get('question');
+        $question = new ConfirmationQuestion("<comment>Delete directory $directory? <info>[Y/n]</info></comment>", true);
+        if ($helper->ask($input, $output, $question)) {
+            $this->printInfo("Deleting $directory", $output);
+            $this->filesystem->remove($directory);
+        } else {
+            $this->printInfo("Not deleting $directory", $output);
         }
-        $configuration = $this->loadConfiguration($tasks);
-
-        $commit = $this->git->getCurrentCommit($directory);
-
-        $data = [$this->processDirectory($commit, $directory, $configuration['tasks'])];
-
-        $this->formatAndOutput($format, $output, $configuration, $data);
-
-        $output->getErrorOutput()->writeln('Done');
     }
 
     private function processCommits($commits, $directory, array $tasks) : \Generator
@@ -121,5 +125,24 @@ class TaskRunner
         }
 
         return $configuration;
+    }
+
+    /**
+     * @return string Directory path.
+     */
+    private function createTemporaryDirectory() : string
+    {
+        $temporaryFile = tempnam(sys_get_temp_dir(), 'gitstats_');
+
+        // Turn the temporary file into a temporary directory
+        $this->filesystem->remove($temporaryFile);
+        $this->filesystem->mkdir($temporaryFile);
+
+        return $temporaryFile;
+    }
+
+    private function printInfo($message, ConsoleOutputInterface $output)
+    {
+        $output->getErrorOutput()->writeln("<comment>$message</comment>");
     }
 }

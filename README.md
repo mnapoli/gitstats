@@ -6,7 +6,7 @@
 
 - clone this repository
 - install Composer dependencies
-- symlink the `gitstats` to your `/usr/local/bin`
+- symlink the `gitstats` to your `/usr/local/bin`: `ln -s /home/<you>/code/gitstats/gitstats /usr/local/bin/gitstats`
 
 ## Usage
 

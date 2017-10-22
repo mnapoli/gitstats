@@ -5,8 +5,14 @@
         }
     },
     "require": {
-        "mnapoli/silly-php-di": "^1.1",
+        "mnapoli/silly": "^1.1",
+        "php-di/php-di": "^5.4",
         "symfony/yaml": "^3.1",
         "symfony/filesystem": "^3.1"
+    },
+    "config": {
+        "platform": {
+            "php": "7.0"
+        }
     }
 }
