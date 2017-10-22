@@ -2,10 +2,16 @@
 
 **Work in progress**
 
+## Installation
+
+- clone this repository
+- install Composer dependencies
+- symlink the `gitstats` to your `/usr/local/bin`
+
 ## Usage
 
 - clone the repository you want to analyze in a temporary directory (e.g. `/tmp/repository`)
-- add a `gitstats.yml` file in your current directory
+- add a `gitstats.yml` file in your current directory (you can create an empty directory if you want)
 - run `gitstats run /tmp/repository`
 
 Example of a `gitstats.yml`:
@@ -42,7 +48,7 @@ fc0646f236e6bb0a10b14a67424f932f28eb1062,2016-08-26T19:29:40+02:00,62,28
 The output is formatted as CSV, you can write that to a file:
 
 ```
-php app.php run <directory> > results.csv
+gitstats run <directory> > results.csv
 ```
 
 You can then import that into a database or open it up with Excel or whatever.
@@ -50,11 +56,11 @@ You can then import that into a database or open it up with Excel or whatever.
 You can also output the result as SQL queries:
 
 ```
-php app.php run <directory> --format=sql | mysql -u dbuser -p mytable
+gitstats run <directory> --format=sql | mysql -u dbuser -p mytable
 ```
 
 ### Run once
 
 ```
-php app.php run-once <directory>
+gitstats run-once <directory>
 ```

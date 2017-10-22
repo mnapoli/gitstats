@@ -1,12 +1,23 @@
 <?php
 declare(strict_types = 1);
 
-require_once __DIR__ . '/vendor/autoload.php';
-
 use GitIterator\Helper\Git;
 use GitIterator\TaskRunner;
 use Silly\Edition\PhpDi\Application;
 use Symfony\Component\Filesystem\Filesystem;
+
+foreach ([__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php'] as $file) {
+    if (file_exists($file)) {
+        define('COMPOSER_INSTALL', $file);
+        break;
+    }
+}
+if (!defined('COMPOSER_INSTALL')) {
+    echo 'Composer dependencies could not be found';
+    die(1);
+}
+
+require COMPOSER_INSTALL;
 
 $app = new Application();
 
