@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace GitIterator;
 
@@ -38,16 +38,25 @@ class TaskRunner
      */
     private $application;
 
-    public function __construct(Git $git, Filesystem $filesystem, CommandRunner $commandRunner, Application $application)
-    {
+    public function __construct(
+        Git $git,
+        Filesystem $filesystem,
+        CommandRunner $commandRunner,
+        Application $application
+    ) {
         $this->git = $git;
         $this->filesystem = $filesystem;
         $this->commandRunner = $commandRunner;
         $this->application = $application;
     }
 
-    public function run(string $url, array $tasks = null, string $format = null, InputInterface $input, ConsoleOutputInterface $output)
-    {
+    public function run(
+        string $url,
+        array $tasks = null,
+        string $format = null,
+        InputInterface $input,
+        ConsoleOutputInterface $output
+    ) {
         // TODO default parameter value?
         $format = $format ?: 'csv';
 
@@ -70,7 +79,7 @@ class TaskRunner
 
         /** @var QuestionHelper $helper */
         $helper = $this->application->getHelperSet()->get('question');
-        $question = new ConfirmationQuestion("<comment>Delete directory $directory? <info>[Y/n]</info></comment>", true);
+        $question = new ConfirmationQuestion("<comment>Delete directory $directory? <info>[Y/n]</info></comment>");
         if ($helper->ask($input, $output, $question)) {
             $this->printInfo("Deleting $directory", $output);
             $this->filesystem->remove($directory);
@@ -120,7 +129,7 @@ class TaskRunner
         }
         $configuration = Yaml::parse(file_get_contents('gitstats.yml'));
 
-        if ($tasks && !empty($configuration['tasks'])) {
+        if ($tasks && ! empty($configuration['tasks'])) {
             $configuration['tasks'] = array_intersect_key($configuration['tasks'], array_flip($tasks));
         }
 
