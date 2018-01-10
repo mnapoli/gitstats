@@ -20,6 +20,6 @@ require COMPOSER_INSTALL;
 
 $app = new Application;
 
-$app->command('run url [tasks]* [--format=] [--max=]', [TaskRunner::class, 'run']);
+$app->command('run url [tasks]* [--format=] [--max=] [--progress]', [TaskRunner::class, 'run']);
 
 $app->run();

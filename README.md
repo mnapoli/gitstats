@@ -63,3 +63,11 @@ You can limit the number of commits to process using the `--max` parameter:
 # Process only 100 commits
 $ gitstats run <git-repository-url> --max=100
 ```
+
+### Show the progress
+
+You can show a progress bar on stderr using the `--progress` parameter. When using that parameter it makes sense to redirect the output to a file or another command:
+
+```shell
+$ gitstats run <git-repository-url> --progress > file.csv
+```

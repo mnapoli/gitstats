@@ -10,6 +10,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
@@ -55,6 +56,7 @@ class TaskRunner
         array $tasks = null,
         string $format = 'csv',
         int $max = null,
+        bool $progress,
         InputInterface $input,
         ConsoleOutputInterface $output
     ) {
@@ -72,9 +74,15 @@ class TaskRunner
         }
         $this->printDebug(sprintf('Iterating through <info>%d</info> commits', count($commits)), $output);
 
+        $stdout = new SymfonyStyle($input, $output);
+        $stderr = $stdout->getErrorStyle();
+        if ($progress) {
+            $stderr->progressStart(count($commits));
+        }
+
         $data = $this->processCommits($commits, $directory, $configuration['tasks']);
 
-        $this->formatAndOutput($format, $output, $configuration, $data);
+        $this->formatAndOutput($format, $stdout, $stderr, $configuration, $data, $progress);
 
         $this->printDebug('Done', $output);
 
@@ -89,7 +97,7 @@ class TaskRunner
         }
     }
 
-    private function processCommits($commits, $directory, array $tasks) : \Generator
+    private function processCommits(array $commits, $directory, array $tasks) : \Generator
     {
         foreach ($commits as $commit) {
             $this->git->checkoutCommit($directory, $commit);
@@ -109,15 +117,24 @@ class TaskRunner
         }
     }
 
-    private function formatAndOutput(string $format, ConsoleOutputInterface $output, array $configuration, $data)
-    {
+    private function formatAndOutput(
+        string $format,
+        SymfonyStyle $stdout,
+        SymfonyStyle $stderr,
+        array $configuration,
+        $data,
+        bool $progress
+    ) {
         $format = $format ?: 'csv';
         $formatterClass = sprintf('GitStats\Formatter\%sFormatter', ucfirst($format));
         /** @var Formatter $formatter */
         $formatter = new $formatterClass;
         $data = $formatter->format($configuration, $data);
         foreach ($data as $line) {
-            $output->writeln($line);
+            $stdout->writeln($line);
+            if ($progress) {
+                $stderr->progressAdvance();
+            }
         }
     }
 
