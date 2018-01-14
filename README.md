@@ -71,3 +71,5 @@ You can show a progress bar on stderr using the `--progress` parameter. When usi
 ```shell
 $ gitstats run <git-repository-url> --progress > file.csv
 ```
+
+![](https://i.imgur.com/zoKRker.png)
